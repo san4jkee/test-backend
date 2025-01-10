@@ -13,23 +13,27 @@ import com.papsign.ktor.openapigen.route.route
 
 fun NormalOpenAPIRoute.budget() {
     route("/budget") {
-        route("/add").post<Unit, BudgetRecord, BudgetRecord>(info("Добавить запись")) { param, body ->
-            respond(BudgetService.addRecord(body))
+        route("/add").post<Unit, BudgetRecord, BudgetRecord>(info("Добавить запись")) { _, body ->
+            val record = BudgetService.addRecord(body)
+            respond(record)
         }
 
         route("/year/{year}/stats") {
             get<BudgetYearParam, BudgetYearStatsResponse>(info("Получить статистику за год")) { param ->
-                respond(BudgetService.getYearStats(param))
+                val response = BudgetService.getYearStats(param)
+                respond(response)
             }
         }
     }
 }
 
+
 data class BudgetRecord(
     @Min(1900) val year: Int,
     @Min(1) @Max(12) val month: Int,
     @Min(1) val amount: Int,
-    val type: BudgetType
+    val type: BudgetType,
+    val authorId: Int? = null
 )
 
 data class BudgetYearParam(
@@ -45,5 +49,5 @@ class BudgetYearStatsResponse(
 )
 
 enum class BudgetType {
-    Приход, Расход, Комиссия
+    Приход, Расход
 }
